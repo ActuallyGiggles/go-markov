@@ -50,3 +50,11 @@ func outputController(i OutputInstructions, outputC chan result) {
 
 	return
 }
+
+func likelyBeginning(i OutputInstructions, c chan result) {
+	
+}
+
+func targetedBeginning(i OutputInstructions, c chan result) {
+	
+}
