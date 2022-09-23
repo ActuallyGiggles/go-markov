@@ -61,3 +61,18 @@ func createChains() {
 func now() string {
 	return time.Now().Format("15:04:05")
 }
+
+func WeightedRandom(itemsAndWeights map[string]int) string {
+	// Create variable for slice of choice struct
+	var choices []wr.Choice
+
+	for item, value := range itemsAndWeights { // For every child, value in map
+		choices = append(choices, wr.Choice{Item: item, Weight: uint(value)}) // Add item, value to choices
+	}
+
+	// for item, value := range itemsAndWeights { // For every child, value in map
+	// 	choices = append(choices, wr.Choice{Item: item, Weight: uint(value)}) // Add item, value to choices
+	// }
+	chooser, _ := wr.NewChooser(choices...) // Initialize chooser
+	return chooser.Pick().(string)          // Choose
+}
