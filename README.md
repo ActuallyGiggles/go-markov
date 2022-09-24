@@ -1,47 +1,45 @@
 # go-markov
 
-Import
+```go
+go get "github.com/mroth/weightedrand"
+go get "github.com/actuallygiggles/go-markov"
+```
+
+Import package
 ```go
 import "go-markov/markov"
 ```
 
+Initialize Markov
 ```go
-package main
-
-import (
-	"fmt"
-	"go-markov/markov"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-)
-
-func main() {
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
-
-	instructions := markov.StartInstructions{
+i := markov.StartInstructions{
 		Workers:       5,
 		WriteInterval: 1,
 		IntervalUnit:  "hours",
 		StartKey:      "start",
 		EndKey:        "end",
-	}
+}
 
-	markov.Start(instructions)
+markov.Start(i)
+```
 
-	outputI := markov.OutputInstructions{
+Add to Markov queue
+```go
+markov.Input("test", "This is a test.")
+```
+
+Output a Markov output
+```go
+oi := markov.OutputInstructions{
 		Method: "TargetedBeginning",
 		Chain:  "test",
 		Target: "This",
-	}
+}
 
-	output, problem := markov.Output(outputI)
+output, problem := markov.Output(oi)
+```
 
-	fmt.Println(output)
-	fmt.Println(problem)
-
-	<-sc
-	log.Println("Stopping...")
-}```
+Get information on workers
+```go
+ws := markov.WorkersStats()
+```
