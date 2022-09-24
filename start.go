@@ -13,7 +13,7 @@ var (
 
 // Start initializes the Markov package.
 //
-// Takes:
+// 	Takes:
 //		StartInstructions {
 // 			Workers       int
 // 			WriteInterval int
