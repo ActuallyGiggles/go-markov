@@ -17,6 +17,7 @@ var (
 //		StartInstructions {
 // 			Workers       int
 // 			WriteInterval int
+//			IntervalUnit  string
 // 			StartKey      string
 // 			EndKey        string
 // 		}
