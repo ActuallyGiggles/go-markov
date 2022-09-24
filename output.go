@@ -83,7 +83,7 @@ func likelyBeginning(i OutputInstructions, c chan result) {
 			return
 		} else {
 			list := list["nextList"]
-			child = WeightedRandom(list)
+			child = weightedRandom(list)
 		}
 
 		if child == endKey {
@@ -99,7 +99,7 @@ func likelyBeginning(i OutputInstructions, c chan result) {
 
 		splitChild = strings.Split(child, " ")
 
-		if !DoesSliceContainIndex(splitChild, 1) {
+		if !doesSliceContainIndex(splitChild, 1) {
 			if sentence == "" {
 				sentence = child
 			}
@@ -168,7 +168,7 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 	}
 
 	// Randomly choose a starting phrase that starts with the word
-	nextParent = WeightedRandom(options)
+	nextParent = weightedRandom(options)
 
 	for true {
 		// Look for the nextParent in the chain, if it doesn't exist, return
@@ -180,7 +180,7 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 			return
 		} else {
 			list := list["nextList"]
-			child = WeightedRandom(list)
+			child = weightedRandom(list)
 		}
 
 		if child == endKey {
@@ -199,7 +199,7 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 
 		// If child is one word, add to sentence
 		// Else, take the second word and prepare it to be searched
-		if !DoesSliceContainIndex(splitChild, 1) {
+		if !doesSliceContainIndex(splitChild, 1) {
 			if sentence == "" {
 				sentence = child
 			}

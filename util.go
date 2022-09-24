@@ -41,7 +41,7 @@ func chainToJson(chain map[string]map[string]map[string]int, path string) {
 }
 
 // PrettyPrint prints out an object in a pretty format
-func PrettyPrint(v interface{}) {
+func prettyPrint(v interface{}) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err == nil {
 		fmt.Println(string(b))
@@ -64,7 +64,7 @@ func now() string {
 	return time.Now().Format("15:04:05")
 }
 
-func WeightedRandom(itemsAndWeights map[string]int) string {
+func weightedRandom(itemsAndWeights map[string]int) string {
 	// Create variable for slice of choice struct
 	var choices []wr.Choice
 
@@ -79,7 +79,7 @@ func WeightedRandom(itemsAndWeights map[string]int) string {
 	return chooser.Pick().(string)          // Choose
 }
 
-func DoesSliceContainIndex(slice []string, index int) bool {
+func doesSliceContainIndex(slice []string, index int) bool {
 	if len(slice) > index {
 		return true
 	} else {
