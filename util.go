@@ -85,3 +85,17 @@ func doesSliceContainIndex(slice []string, index int) bool {
 		return false
 	}
 }
+
+// Chains returns the names of all chains that have been made
+func Chains() []string {
+	files, err := ioutil.ReadDir("./markov/chains/")
+	var s []string
+	if err != nil {
+		// fmt.Println("pass")
+		return s
+	}
+	for _, file := range files {
+		s = append(s, strings.TrimSuffix(file.Name(), ".json"))
+	}
+	return s
+}
