@@ -1,5 +1,10 @@
 # go-markov
 
+Import
+```go
+import "go-markov/markov"
+```
+
 ```go
 package main
 
