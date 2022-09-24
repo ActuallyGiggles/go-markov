@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 func jsonToChain(path string) (chain map[string]map[string]map[string]int, exists bool) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Printf("Failed reading file: %s", err)
+// 		log.Printf("Failed reading file: %s", err)
 		return nil, false
 	}
 
@@ -22,13 +21,13 @@ func jsonToChain(path string) (chain map[string]map[string]map[string]int, exist
 
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Println("jsonToChain error: ", path, "\n", err)
+// 		log.Println("jsonToChain error: ", path, "\n", err)
 		return nil, false
 	}
 
 	err = json.Unmarshal(content, &chain)
 	if err != nil {
-		log.Println("Error when unmarshalling file:", path, "\n", err)
+// 		log.Println("Error when unmarshalling file:", path, "\n", err)
 		return nil, false
 	}
 
@@ -55,7 +54,7 @@ func createChains() {
 	if os.IsNotExist(dberr) {
 		err := os.MkdirAll("markov/chains", 0755)
 		if err != nil {
-			log.Println(err)
+			panic(err)
 		}
 	}
 }
