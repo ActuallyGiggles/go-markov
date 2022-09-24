@@ -37,6 +37,9 @@ oi := markov.OutputInstructions{
 }
 
 output, problem := markov.Output(oi)
+
+fmt.Println(output)
+fmt.Println(problem)
 ```
 
 Get information on workers
