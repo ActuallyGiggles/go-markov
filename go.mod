@@ -1,4 +1,4 @@
-module github.com/actuallygiggles/go-markov
+module github.com/ActuallyGiggles/go-markov
 
 go 1.18
 
