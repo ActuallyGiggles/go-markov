@@ -4,12 +4,12 @@
 go get "github.com/ActuallyGiggles/go-markov"
 ```
 
-Import package
+Import package.
 ```go
 import "go-markov/markov"
 ```
 
-Initialize Markov
+Initialize Markov.
 ```go
 i := markov.StartInstructions{
 		Workers:       5,
@@ -22,13 +22,12 @@ i := markov.StartInstructions{
 markov.Start(i)
 ```
 
-Add to Markov queue
-Important: markov will only write to a chain after the write interval has passed
+Add to Markov queue. Important: markov will only write to a chain after the write interval has ticked.
 ```go
 markov.Input("test", "This is a test.")
 ```
 
-Output a Markov output
+Output a Markov output.
 ```go
 oi := markov.OutputInstructions{
 		Method: "TargetedBeginning",
@@ -42,7 +41,7 @@ fmt.Println(output)
 fmt.Println(problem)
 ```
 
-Get information on workers
+Get information on workers.
 ```go
 ws := markov.WorkersStats()
 ```
