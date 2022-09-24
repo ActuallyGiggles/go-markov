@@ -1,6 +1,7 @@
 package markov
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -45,6 +46,10 @@ func (w *worker) addToQueue(chain string, content string) {
 	w.Intake += 1
 	w.ChainMx.Unlock()
 
+	if debug {
+		fmt.Println("added")
+	}
+
 	w.Status = "Ready"
 	w.LastModified = now()
 }
@@ -81,6 +86,10 @@ func (w *worker) writeToChain() {
 		w.Chain = make(map[string]map[string]map[string]map[string]int)
 	}
 	w.ChainMx.Unlock()
+
+	if debug {
+		fmt.Println("written")
+	}
 
 	w.Status = "Ready"
 	w.LastModified = now()

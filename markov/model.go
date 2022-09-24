@@ -6,6 +6,10 @@ import "sync"
 //
 // 		Workers: How many workers to create
 // 		WriteInterval: How often to write to chains (in minutes)
+//		IntervalUnit: What unit to use for WriteInterval (default minutes)
+//			"seconds"
+//			"minutes"
+//			"hours"
 //		StartKey: A string that is used to signify the natural beginning to the content
 // 		EndKey: A string that is used to signify the natural end to the content
 //
@@ -13,6 +17,7 @@ import "sync"
 type StartInstructions struct {
 	Workers       int
 	WriteInterval int
+	IntervalUnit  string
 	StartKey      string
 	EndKey        string
 }

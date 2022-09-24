@@ -1,8 +1,9 @@
 package markov
 
 import (
+	"fmt"
+	"strings"
 	"sync"
-	wr "github.com/mroth/weightedrand"
 )
 
 var (
@@ -24,10 +25,10 @@ func outputController(i OutputInstructions, outputC chan result) {
 
 	switch i.Method {
 	case "LikelyBeginning":
-		//go likelyBeginning(i, c)
+		go likelyBeginning(i, c)
 		r = <-c
 	case "TargetedBeginning":
-		//go targetedBeginning(i, c)
+		go targetedBeginning(i, c)
 		r = <-c
 	case "LikelyEnd":
 	case "TargetedEnd":
@@ -47,10 +48,10 @@ func outputController(i OutputInstructions, outputC chan result) {
 			outputC <- r
 			return
 		} else {
+			recursionCounterMx.Unlock()
 			go outputController(i, outputC)
 		}
 	}
-
 	return
 }
 
@@ -60,14 +61,14 @@ func likelyBeginning(i OutputInstructions, c chan result) {
 	splitChild := make([]string, 0)
 	nextParent := startKey
 	message := result{
-		Output: "",
-		Problem:   "",
+		Output:  "",
+		Problem: "",
 	}
 
-	chain, exists := jsonToChain("./markovdb/" + channel + ".json")
+	chain, exists := jsonToChain("./markov/chains/" + i.Chain + ".json")
 	if !exists {
-		message.Output = "We ran into a problem!"
-		message.Problem = "ERROR: " + channel + " does not exist."
+		message.Output = ""
+		message.Problem = i.Chain + " does not exist."
 		c <- message
 		close(c)
 		return
@@ -75,8 +76,8 @@ func likelyBeginning(i OutputInstructions, c chan result) {
 
 	for true {
 		if list, ok := chain[nextParent]; !ok {
-			message.Output = channel + " has no messages!"
-			message.Problem = "ERROR: " + channel + " has no messages."
+			message.Output = ""
+			message.Problem = i.Chain + " has no messages."
 			c <- message
 			close(c)
 			return
@@ -118,23 +119,20 @@ func likelyBeginning(i OutputInstructions, c chan result) {
 }
 
 func targetedBeginning(i OutputInstructions, c chan result) {
-	// Choose random word in message
-	w := i.Target
-
-	sentence := w + " "
+	sentence := i.Target + " "
 	child := ""
 	splitChild := make([]string, 0)
 	nextParent := startKey
-	message := Result{
-		Message: "",
-		Error:   "",
+	message := result{
+		Output:  "",
+		Problem: "",
 	}
 
 	// Check if chain exists and get it back as json
-	chain, exists := jsonToChain("./markovdb/" + channel + ".json")
+	chain, exists := jsonToChain("./markov/chains/" + i.Chain + ".json")
 	if !exists {
-		message.Message = "We ran into a problem!"
-		message.Error = "ERROR: " + channel + " does not exist."
+		message.Output = ""
+		message.Problem = i.Chain + " does not exist."
 		c <- message
 		close(c)
 		return
@@ -142,10 +140,10 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 
 	options := make(map[string]int)
 
-	// If  exists and if the first word of a child matches the word that was chosen, add it to the list
+	// If exists and if the first word of a child matches the word that was chosen, add it to the list
 	if list, ok := chain[nextParent]; !ok {
-		message.Message = channel + " has no messages!"
-		message.Error = channel + " has no messages."
+		message.Output = ""
+		message.Problem = i.Chain + " has no messages."
 		c <- message
 		close(c)
 		return
@@ -153,7 +151,7 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 		for _, combo := range list {
 			for child, value := range combo {
 				firstWordInChild := strings.Split(child, " ")[0]
-				if firstWordInChild == w {
+				if firstWordInChild == i.Target {
 					options[child] = value
 				}
 			}
@@ -162,8 +160,8 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 
 	// If no phrase starts with word, ~~recurse~~ or ignore
 	if len(options) == 0 {
-		message.Message = ""
-		message.Error = "ERROR: NO PHRASE STARTS WITH: \"" + w + "\" INFO -> " + channel + " " + nextParent
+		message.Output = ""
+		message.Problem = "ERROR: no phrase starts with \"" + i.Target + "\" \nSource -> " + i.Chain + " " + nextParent
 		c <- message
 		close(c)
 		return
@@ -175,8 +173,8 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 	for true {
 		// Look for the nextParent in the chain, if it doesn't exist, return
 		if list, ok := chain[nextParent]; !ok {
-			message.Message = channel + " ran into a problem!"
-			message.Error = fmt.Sprintf("ERROR: %s does not contain nextParent: %s, even though %s was chosen in getSentenceFromAStart", channel, nextParent, nextParent)
+			message.Output = ""
+			message.Problem = fmt.Sprintf("ERROR: %s does not contain nextParent: %s, even though %s was chosen in getSentenceFromAStart", i.Chain, nextParent, nextParent)
 			c <- message
 			close(c)
 			return
@@ -187,10 +185,10 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 
 		if child == endKey {
 			if len(strings.Split(nextParent, " ")) == 1 {
-				message.Message = sentence
+				message.Output = sentence
 			} else {
 				splitNextParent := strings.Split(nextParent, " ")
-				message.Message = sentence + splitNextParent[1]
+				message.Output = sentence + splitNextParent[1]
 			}
 			c <- message
 			close(c)
@@ -205,7 +203,7 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 			if sentence == "" {
 				sentence = child
 			}
-			message.Message = sentence
+			message.Output = sentence
 			c <- message
 			close(c)
 			return
@@ -214,7 +212,7 @@ func targetedBeginning(i OutputInstructions, c chan result) {
 			sentence = sentence + splitChild[0] + " "
 		}
 	}
-	message.Message = sentence
+	message.Output = sentence
 	c <- message
 	close(c)
 	return

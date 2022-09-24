@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	wr "github.com/mroth/weightedrand"
 )
 
 func jsonToChain(path string) (chain map[string]map[string]map[string]int, exists bool) {
@@ -75,4 +77,12 @@ func WeightedRandom(itemsAndWeights map[string]int) string {
 	// }
 	chooser, _ := wr.NewChooser(choices...) // Initialize chooser
 	return chooser.Pick().(string)          // Choose
+}
+
+func DoesSliceContainIndex(slice []string, index int) bool {
+	if len(slice) > index {
+		return true
+	} else {
+		return false
+	}
 }
