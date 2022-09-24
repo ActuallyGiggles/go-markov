@@ -11,6 +11,14 @@ var (
 	recursionCounterMx sync.Mutex
 )
 
+// Output takes a set of instructions and returns an output and (potential) problem
+//
+// 	Takes:
+//		OutputInstructions {
+// 			Method string
+//			Chain  string
+//			Target string
+// 		}
 func Output(instructions OutputInstructions) (output string, problem string) {
 	c := make(chan result)
 	go outputController(instructions, c)
