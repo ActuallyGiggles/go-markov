@@ -8,7 +8,7 @@ import (
 var (
 	startKey string
 	endKey   string
-	debug    bool = true
+	debug    bool = false
 )
 
 // Start initializes the Markov package.
