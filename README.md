@@ -13,8 +13,8 @@ Initialize Markov
 ```go
 i := markov.StartInstructions{
 		Workers:       5,
-		WriteInterval: 1,
-		IntervalUnit:  "hours",
+		WriteInterval: 10,
+		IntervalUnit:  "minutes",
 		StartKey:      "start",
 		EndKey:        "end",
 }
@@ -23,6 +23,7 @@ markov.Start(i)
 ```
 
 Add to Markov queue
+Important: markov will only write to a chain after the write interval has passed
 ```go
 markov.Input("test", "This is a test.")
 ```
