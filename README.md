@@ -6,7 +6,7 @@ go get "github.com/ActuallyGiggles/go-markov"
 
 Import package.
 ```go
-import "go-markov/markov"
+import "github.com/ActuallyGiggles/go-markov"
 ```
 
 Initialize Markov.
