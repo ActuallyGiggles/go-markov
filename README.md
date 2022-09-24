@@ -1,8 +1,7 @@
 # go-markov
 
 ```go
-go get "github.com/mroth/weightedrand"
-go get "github.com/actuallygiggles/go-markov"
+go get "github.com/ActuallyGiggles/go-markov"
 ```
 
 Import package
