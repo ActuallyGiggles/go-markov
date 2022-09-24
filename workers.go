@@ -114,7 +114,3 @@ func WorkersStats() (slice []WorkerStats) {
 
 	return slice
 }
-
-func E() map[int]*worker {
-	return workerMap
-}
