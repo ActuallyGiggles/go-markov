@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	"strings"
 
 	wr "github.com/mroth/weightedrand"
 )
