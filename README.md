@@ -45,3 +45,8 @@ Get information on workers.
 ```go
 ws := markov.WorkersStats()
 ```
+
+Find out how long until the next write time.
+```go
+fmt.Println(markov.TimeUntilWrite())
+```
