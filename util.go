@@ -68,6 +68,10 @@ func TimeUntilWrite() time.Duration {
 	return nextWriteTime.Sub(time.Now())
 }
 
+func NextWriteTime() time.Time {
+	return nextWriteTime
+}
+
 func weightedRandom(itemsAndWeights map[string]int) string {
 	// Create variable for slice of choice struct
 	var choices []wr.Choice
