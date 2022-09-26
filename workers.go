@@ -96,8 +96,6 @@ func (w *worker) writeToChain() {
 }
 
 // WorkersStats returns a slice of type WorkerStats
-//
-//
 func WorkersStats() (slice []WorkerStats) {
 	workerMapMx.Lock()
 	for _, w := range workerMap {

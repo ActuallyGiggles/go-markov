@@ -9,15 +9,16 @@ var (
 	startKey string
 	endKey   string
 	debug    bool
+
+	nextWriteTime time.Time
 )
 
 // Start initializes the Markov package.
 //
-// 	Takes:
+// Takes:
 //		StartInstructions {
 // 			Workers       int
 // 			WriteInterval int
-//			IntervalUnit  string
 // 			StartKey      string
 // 			EndKey        string
 // 		}
@@ -48,6 +49,7 @@ func writeTicker(value int, intervalUnit string) {
 		unit = time.Hour
 	}
 
+	nextWriteTime = time.Now().Add(time.Duration(value) * unit)
 	for range time.Tick(time.Duration(value) * unit) {
 		for _, w := range workerMap {
 			if debug {
@@ -57,5 +59,6 @@ func writeTicker(value int, intervalUnit string) {
 			w.writeToChain()
 			w.Intake = 0
 		}
+		nextWriteTime = time.Now().Add(time.Duration(value) * unit)
 	}
 }

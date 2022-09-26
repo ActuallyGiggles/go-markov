@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 	"strings"
+	"time"
 
 	wr "github.com/mroth/weightedrand"
 )
@@ -14,7 +14,7 @@ import (
 func jsonToChain(path string) (chain map[string]map[string]map[string]int, exists bool) {
 	file, err := os.Open(path)
 	if err != nil {
-// 		log.Printf("Failed reading file: %s", err)
+		// 		log.Printf("Failed reading file: %s", err)
 		return nil, false
 	}
 
@@ -22,13 +22,13 @@ func jsonToChain(path string) (chain map[string]map[string]map[string]int, exist
 
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
-// 		log.Println("jsonToChain error: ", path, "\n", err)
+		// 		log.Println("jsonToChain error: ", path, "\n", err)
 		return nil, false
 	}
 
 	err = json.Unmarshal(content, &chain)
 	if err != nil {
-// 		log.Println("Error when unmarshalling file:", path, "\n", err)
+		// 		log.Println("Error when unmarshalling file:", path, "\n", err)
 		return nil, false
 	}
 
@@ -62,6 +62,10 @@ func createChains() {
 
 func now() string {
 	return time.Now().Format("15:04:05")
+}
+
+func TimeUntilWrite() time.Duration {
+	return nextWriteTime.Sub(time.Now())
 }
 
 func weightedRandom(itemsAndWeights map[string]int) string {
