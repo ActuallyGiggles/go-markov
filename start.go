@@ -6,9 +6,12 @@ import (
 )
 
 var (
-	startKey string
-	endKey   string
-	Debug    bool
+	workers       int
+	writeInterval int
+	intervalUnit  string
+	startKey      string
+	endKey        string
+	Debug         bool
 
 	nextWriteTime time.Time
 )
@@ -19,23 +22,27 @@ var (
 //		StartInstructions {
 // 			Workers       int
 // 			WriteInterval int
+//			IntervalUnit  string
 // 			StartKey      string
 // 			EndKey        string
 // 		}
 func Start(instructions StartInstructions) {
 	createChains()
 
+	workers = instructions.Workers
+	writeInterval = instructions.WriteInterval
+	intervalUnit = instructions.IntervalUnit
 	startKey = instructions.StartKey
 	endKey = instructions.EndKey
 
 	toWorker = make(chan input)
 
-	startWorkers(instructions.Workers)
+	startWorkers()
 
-	go writeTicker(instructions.WriteInterval, instructions.IntervalUnit)
+	go writeTicker()
 }
 
-func writeTicker(value int, intervalUnit string) {
+func writeTicker() {
 	var unit time.Duration
 
 	switch intervalUnit {
@@ -49,9 +56,9 @@ func writeTicker(value int, intervalUnit string) {
 		unit = time.Hour
 	}
 
-	nextWriteTime = time.Now().Add(time.Duration(value) * unit)
-	for range time.Tick(time.Duration(value) * unit) {
-		nextWriteTime = time.Now().Add(time.Duration(value) * unit)
+	nextWriteTime = time.Now().Add(time.Duration(writeInterval) * unit)
+	for range time.Tick(time.Duration(writeInterval) * unit) {
+		nextWriteTime = time.Now().Add(time.Duration(writeInterval) * unit)
 
 		writing := 0
 		for _, w := range workerMap {
@@ -59,7 +66,7 @@ func writeTicker(value int, intervalUnit string) {
 				fmt.Printf("Worker %d is writing...", w.ID)
 				fmt.Println()
 			}
-			if writing >= 1 {
+			if writing >= (workers/2)-1 {
 				w.writeToChain()
 				writing = 0
 			}

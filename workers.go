@@ -11,8 +11,8 @@ var (
 	toWorker    chan input
 )
 
-func startWorkers(workerAmount int) {
-	for i := 0; i < workerAmount; i++ {
+func startWorkers() {
+	for i := 0; i < workers; i++ {
 		go newWorker(i)
 	}
 }
