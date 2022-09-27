@@ -11,8 +11,8 @@ var (
 	toWorker    chan input
 )
 
-func startWorkers(workerAmount int) {
-	for i := 0; i < workerAmount; i++ {
+func startWorkers() {
+	for i := 0; i < workers; i++ {
 		go newWorker(i)
 	}
 }
@@ -74,7 +74,9 @@ func (w *worker) writeToChain() {
 						existingChain[currentParent][currentList][currentchild] = 0
 					}
 					existingChain[currentParent][currentList][currentchild] += currenttimesUsed
-					fmt.Println(currentChain, currentParent, currentList, currentchild, currenttimesUsed)
+					if Debug {
+						fmt.Println(currentChain, currentParent, currentList, currentchild, currenttimesUsed)
+					}
 				}
 			}
 		}
@@ -82,6 +84,7 @@ func (w *worker) writeToChain() {
 		chainToJson(existingChain, path)
 
 		w.Chain = make(map[string]map[string]map[string]map[string]int)
+		w.Intake = 0
 	}
 	w.ChainMx.Unlock()
 
