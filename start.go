@@ -52,13 +52,19 @@ func writeTicker(value int, intervalUnit string) {
 	nextWriteTime = time.Now().Add(time.Duration(value) * unit)
 	for range time.Tick(time.Duration(value) * unit) {
 		nextWriteTime = time.Now().Add(time.Duration(value) * unit)
+
+		writing := 0
 		for _, w := range workerMap {
 			if Debug {
 				fmt.Printf("Worker %d is writing...", w.ID)
 				fmt.Println()
 			}
-			w.writeToChain()
-			w.Intake = 0
+			if writing >= 1 {
+				w.writeToChain()
+				writing = 0
+			}
+			go w.writeToChain()
+			writing += 1
 		}
 	}
 }

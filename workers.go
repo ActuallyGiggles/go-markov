@@ -82,6 +82,7 @@ func (w *worker) writeToChain() {
 		chainToJson(existingChain, path)
 
 		w.Chain = make(map[string]map[string]map[string]map[string]int)
+		w.Intake = 0
 	}
 	w.ChainMx.Unlock()
 
