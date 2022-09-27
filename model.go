@@ -58,6 +58,11 @@ type input struct {
 	Content string
 }
 
+type result struct {
+	Output  string
+	Problem string
+}
+
 type worker struct {
 	ID           int
 	Chain        map[string]map[string]map[string]map[string]int
@@ -65,9 +70,4 @@ type worker struct {
 	Intake       int
 	Status       string
 	LastModified string
-}
-
-type result struct {
-	Output  string
-	Problem string
 }

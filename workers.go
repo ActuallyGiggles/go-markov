@@ -74,6 +74,7 @@ func (w *worker) writeToChain() {
 						existingChain[currentParent][currentList][currentchild] = 0
 					}
 					existingChain[currentParent][currentList][currentchild] += currenttimesUsed
+					fmt.Println(currentChain, currentParent, currentList, currentchild, currenttimesUsed)
 				}
 			}
 		}
