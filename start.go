@@ -13,7 +13,7 @@ var (
 	nextWriteTime time.Time
 )
 
-// Start initializes the Markov package.
+// Start initializes the Markov  package.
 //
 // Takes:
 //		StartInstructions {
