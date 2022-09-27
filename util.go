@@ -64,10 +64,12 @@ func now() string {
 	return time.Now().Format("15:04:05")
 }
 
+// TimeUntilWrite returns the duration until the next write cycle
 func TimeUntilWrite() time.Duration {
 	return nextWriteTime.Sub(time.Now())
 }
 
+// NextWriteTime returns what time the next write cycle will happen
 func NextWriteTime() time.Time {
 	return nextWriteTime
 }
