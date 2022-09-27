@@ -73,9 +73,7 @@ func NextWriteTime() time.Time {
 	return nextWriteTime
 }
 
-<<<<<<< Updated upstream
-=======
-// PeakIntake returns the highest intake across all workers per session
+// PeakIntake returns the highest intake across all workers per session and at what time it happened
 func PeakIntake() struct {
 	Amount int
 	Time   time.Time
@@ -83,7 +81,6 @@ func PeakIntake() struct {
 	return peakIntake
 }
 
->>>>>>> Stashed changes
 func weightedRandom(itemsAndWeights map[string]int) string {
 	// Create variable for slice of choice struct
 	var choices []wr.Choice
