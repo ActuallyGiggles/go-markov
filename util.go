@@ -17,7 +17,6 @@ func jsonToChain(path string) (chain map[string]map[string]map[string]int, exist
 		// 		log.Printf("Failed reading file: %s", err)
 		return nil, false
 	}
-
 	defer file.Close()
 
 	content, err := ioutil.ReadAll(file)
@@ -82,9 +81,6 @@ func weightedRandom(itemsAndWeights map[string]int) string {
 		choices = append(choices, wr.Choice{Item: item, Weight: uint(value)}) // Add item, value to choices
 	}
 
-	// for item, value := range itemsAndWeights { // For every child, value in map
-	// 	choices = append(choices, wr.Choice{Item: item, Weight: uint(value)}) // Add item, value to choices
-	// }
 	chooser, _ := wr.NewChooser(choices...) // Initialize chooser
 	return chooser.Pick().(string)          // Choose
 }

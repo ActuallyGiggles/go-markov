@@ -38,20 +38,14 @@ func newWorker(id int) {
 }
 
 func (w *worker) addToQueue(chain string, content string) {
-	w.Status = "Adding"
-	w.LastModified = now()
-
 	w.ChainMx.Lock()
 	contentToChain(&w.Chain, chain, content)
 	w.Intake += 1
 	w.ChainMx.Unlock()
 
-	if debug {
+	if Debug {
 		fmt.Println("added")
 	}
-
-	w.Status = "Ready"
-	w.LastModified = now()
 }
 
 func (w *worker) writeToChain() {
@@ -67,16 +61,19 @@ func (w *worker) writeToChain() {
 			existingChain = make(map[string]map[string]map[string]int)
 		}
 
-		for parent, parentValue := range currentChainValue {
-			if _, ok := existingChain[parent]; !ok {
-				existingChain[parent] = make(map[string]map[string]int)
+		for currentParent, currentParentValue := range currentChainValue {
+			if _, ok := existingChain[currentParent]; !ok {
+				existingChain[currentParent] = make(map[string]map[string]int)
 			}
-			for list, listValue := range parentValue {
-				if _, ok := existingChain[parent][list]; !ok {
-					existingChain[parent][list] = make(map[string]int)
+			for currentList, currentListValue := range currentParentValue {
+				if _, ok := existingChain[currentParent][currentList]; !ok {
+					existingChain[currentParent][currentList] = make(map[string]int)
 				}
-				for child, timesUsed := range listValue {
-					existingChain[parent][list][child] += timesUsed
+				for currentchild, currenttimesUsed := range currentListValue {
+					if _, ok := existingChain[currentParent][currentList][currentchild]; !ok {
+						existingChain[currentParent][currentList][currentchild] = 0
+					}
+					existingChain[currentParent][currentList][currentchild] += currenttimesUsed
 				}
 			}
 		}
@@ -87,7 +84,7 @@ func (w *worker) writeToChain() {
 	}
 	w.ChainMx.Unlock()
 
-	if debug {
+	if Debug {
 		fmt.Println("written")
 	}
 
@@ -98,14 +95,14 @@ func (w *worker) writeToChain() {
 // WorkersStats returns a slice of type WorkerStats
 func WorkersStats() (slice []WorkerStats) {
 	workerMapMx.Lock()
-	for _, w := range workerMap {
+	for i := 0; i < len(workerMap); i++ {
+		w := workerMap[i]
 		e := WorkerStats{
 			ID:           w.ID,
 			Intake:       w.Intake,
 			Status:       w.Status,
 			LastModified: w.LastModified,
 		}
-
 		slice = append(slice, e)
 	}
 	workerMapMx.Unlock()

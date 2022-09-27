@@ -27,9 +27,8 @@ type StartInstructions struct {
 // 		ID: ID of worker
 //		Intake: How many inputs this worker has gotten (clears after every Instructions.WriteInterval)
 //		Status: Current status of worker
-//			"Ready": Ready to work
-//			"Adding": Adding content to queue
-//			"Writing": Writing queue to chains
+//			"Ready": Accepting content into queue
+//			"Writing": Writing queue into chains
 //		LastModified: The last time the status was updated
 type WorkerStats struct {
 	ID           int
