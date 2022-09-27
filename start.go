@@ -14,6 +14,13 @@ var (
 	Debug         bool
 
 	nextWriteTime time.Time
+<<<<<<< Updated upstream
+=======
+	peakIntake    struct {
+		Amount int
+		Time   time.Time
+	}
+>>>>>>> Stashed changes
 )
 
 // Start initializes the Markov  package.
@@ -66,6 +73,15 @@ func writeTicker() {
 				fmt.Printf("Worker %d is writing...", w.ID)
 				fmt.Println()
 			}
+<<<<<<< Updated upstream
+=======
+
+			if w.Intake > peakIntake.Amount {
+				peakIntake.Amount = w.Intake
+				peakIntake.Time = time.Now()
+			}
+
+>>>>>>> Stashed changes
 			if writing >= (workers/2)-1 {
 				w.writeToChain()
 				writing = 0
