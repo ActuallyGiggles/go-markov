@@ -55,3 +55,8 @@ Find out how long until the next write.
 ```go
 fmt.Println(markov.TimeUntilWrite())
 ```
+
+What is the peak intake and when did it happen.
+```go
+fmt.Println(markov.PeakIntake())
+```
