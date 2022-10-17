@@ -17,7 +17,7 @@ func Start(sI StartInstructions) error {
 	WriteCountLimit = sI.WriteLimit
 	startKey = sI.StartKey
 	endKey = sI.EndKey
-	debug = sI.Debug
+	debug = true
 
 	startWorkers()
 

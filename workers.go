@@ -33,9 +33,7 @@ func (w *worker) addInput(content string) {
 	w.ChainMx.Lock()
 	defer w.ChainMx.Unlock()
 
-	fmt.Println(w.Chain)
 	contentToChain(&w.Chain, w.Name, content)
-	fmt.Println(w.Chain)
 	w.Intake += 1
 
 	// for _, parent := range w.Chain.Parents {
@@ -56,9 +54,9 @@ func (w *worker) writeToFile() {
 
 	w.Status = "Writing"
 	w.LastModified = now()
-	path := "./markov/chains/" + w.Name + ".json"
 
-	chainToJson(w.Chain, path)
+	fmt.Println("writing")
+	chainToJson(w.Chain, w.Name)
 
 	w.Intake = 0
 	w.Status = "Ready"

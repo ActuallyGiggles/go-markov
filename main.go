@@ -3,10 +3,10 @@ package main
 func main() {
 	Start(StartInstructions{
 		WriteMode:  "counter",
-		WriteLimit: 1,
+		WriteLimit: 0,
 		StartKey:   "!S",
 		EndKey:     "!E",
 	})
 
-	In("test", "this is a test")
+	In("test", "this is a pie")
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -109,9 +108,7 @@ func extractEndAndSaveToChain(c *chain, name string, slice []string) {
 
 				if grandparent.Word == previous {
 					grandparentExists = true
-					fmt.Println(parent.Word, "->", grandparent.Word, ":", grandparent.Value)
 					grandparent.Value += 1
-					fmt.Println(parent.Word, "->", grandparent.Word, ":", grandparent.Value)
 				}
 			}
 

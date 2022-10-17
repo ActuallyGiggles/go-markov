@@ -62,8 +62,7 @@ func chainToJson(c chain, name string) {
 		debugLog(err)
 	}
 
-	fileStat, _ := f.Stat()
-	fileSize := fileStat.Size()
+	fileStat, ferr := f.Stat()
 
 	n2, err := f.Write(chainData)
 	f.Close()
@@ -71,14 +70,20 @@ func chainToJson(c chain, name string) {
 		debugLog(err)
 	}
 
-	change := int64(n2) - fileSize
+	if ferr == nil {
+		fileSize := fileStat.Size()
+		change := int64(n2) - fileSize
 
-	if change > 0 {
-		debugLog("wrote successfully to", path)
-		debugLog(int64(n2), "-", fileSize, "=", change)
+		if change > 0 {
+			debugLog("wrote successfully to", path)
+			debugLog(int64(n2), "-", fileSize, "=", change)
+		} else {
+			debugLog("wrote unsuccessfully to", path)
+			debugLog(int64(n2), "-", fileSize, "=", change)
+		}
 	} else {
-		debugLog("wrote unsuccessfully to", path)
-		debugLog(int64(n2), "-", fileSize, "=", change)
+		debugLog("wrote successfully to", path)
+		debugLog(int64(n2))
 	}
 }
 
