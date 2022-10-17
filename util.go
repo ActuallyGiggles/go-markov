@@ -1,0 +1,133 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"strings"
+	"time"
+)
+
+func debugLog(v ...any) {
+	if debug {
+		log.Println(v...)
+	}
+}
+
+func chains() []string {
+	files, err := ioutil.ReadDir("./chains/")
+	var s []string
+	if err != nil {
+		// fmt.Println("pass")
+		return s
+	}
+	for _, file := range files {
+		s = append(s, strings.TrimSuffix(file.Name(), ".json"))
+	}
+	return s
+}
+
+func now() string {
+	return time.Now().Format("15:04:05")
+}
+
+func jsonToChain(name string) (c chain) {
+	path := "./chains/" + name + ".json"
+	file, err := os.Open(path)
+	if err != nil {
+		debugLog("Failed reading file:", err)
+	}
+	defer file.Close()
+
+	err = json.NewDecoder(file).Decode(&c)
+	if err != nil {
+		debugLog("Error when unmarshalling file:", path, "\n", err)
+	}
+
+	return c
+}
+
+func chainToJson(c chain, name string) {
+	path := "./chains/" + name + ".json"
+
+	chainData, err := json.MarshalIndent(c, "", " ")
+	if err != nil {
+		debugLog(err)
+	}
+
+	f, err := os.Create(path)
+	if err != nil {
+		debugLog(err)
+	}
+
+	fileStat, _ := f.Stat()
+	fileSize := fileStat.Size()
+
+	n2, err := f.Write(chainData)
+	f.Close()
+	if err != nil {
+		debugLog(err)
+	}
+
+	change := int64(n2) - fileSize
+
+	if change > 0 {
+		debugLog("wrote successfully to", path)
+		debugLog(int64(n2), "-", fileSize, "=", change)
+	} else {
+		debugLog("wrote unsuccessfully to", path)
+		debugLog(int64(n2), "-", fileSize, "=", change)
+	}
+}
+
+func PrettyPrint(v interface{}) {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err == nil {
+		fmt.Println(string(b))
+	}
+}
+
+func track(chain string) (string, time.Time) {
+	return chain, time.Now()
+}
+
+func duration(chain string, start time.Time) {
+	debugLog(chain + ": " + fmt.Sprint(time.Since(start)))
+}
+
+// CurrentChains returns the names of all chains that have been made
+func CurrentChains() []string {
+	workerMapMx.Lock()
+	var s []string
+	for chain := range workerMap {
+		s = append(s, chain)
+	}
+	workerMapMx.Unlock()
+	return s
+}
+
+// WriteMode returns what the current mode is
+func WriteMode() (mode string) {
+	return writeMode
+}
+
+// TimeUntilWrite returns the duration until the next write cycle
+func TimeUntilWrite() time.Duration {
+	return nextWriteTime.Sub(time.Now())
+}
+
+// NextWriteTime returns what time the next write cycle will happen
+func NextWriteTime() time.Time {
+	return nextWriteTime
+}
+
+// ChainPeakIntake returns the highest intake across all workers per session and at what time it happened
+func ChainPeakIntake() struct {
+	Chain  string
+	Amount int
+	Time   time.Time
+} {
+	return chainPeakIntake
+}
