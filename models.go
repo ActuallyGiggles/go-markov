@@ -51,3 +51,10 @@ type wRand struct {
 	Word  string
 	Value int
 }
+
+type WorkerStats struct {
+	ChainResponsibleFor string
+	Intake              int
+	Status              string
+	LastModified        string
+}

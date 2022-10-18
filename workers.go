@@ -68,3 +68,19 @@ func (w *worker) writeToFile() {
 	w.Status = "Ready"
 	w.LastModified = now()
 }
+
+// WorkersStats returns a slice of type WorkerStats
+func WorkersStats() (slice []WorkerStats) {
+	workerMapMx.Lock()
+	for _, w := range workerMap {
+		e := WorkerStats{
+			ChainResponsibleFor: w.Name,
+			Intake:              w.Intake,
+			Status:              w.Status,
+			LastModified:        w.LastModified,
+		}
+		slice = append(slice, e)
+	}
+	workerMapMx.Unlock()
+	return slice
+}
