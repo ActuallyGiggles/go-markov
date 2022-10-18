@@ -20,9 +20,6 @@ func writeCounter() {
 		if CurrentCount > WriteCountLimit {
 			go writeLoop()
 			CurrentCount = 0
-
-			//time.Sleep temporarily here because main exits faster than the goroutine
-			//time.Sleep(1 * time.Second)
 		}
 	}
 }

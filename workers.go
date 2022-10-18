@@ -11,17 +11,23 @@ var (
 )
 
 func newWorker(name string) *worker {
-	workerMapMx.Lock()
-	defer workerMapMx.Unlock()
-
-	c := jsonToChain(name)
-
-	w := &worker{
-		Name:  name,
-		Chain: c,
+	c, err := jsonToChain(name)
+	var w *worker
+	if err != nil {
+		w = &worker{
+			Name:  name,
+			Chain: chain{},
+		}
+	} else {
+		w = &worker{
+			Name:  name,
+			Chain: c,
+		}
 	}
 
+	workerMapMx.Lock()
 	workerMap[name] = w
+	workerMapMx.Unlock()
 
 	w.Status = "Ready"
 	w.LastModified = now()

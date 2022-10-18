@@ -19,6 +19,8 @@ func Start(sI StartInstructions) error {
 	endKey = sI.EndKey
 	debug = true
 
+	createChainsFolder()
+
 	startWorkers()
 
 	if writeMode == "interval" {

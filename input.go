@@ -1,21 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
 func In(chainName string, content string) {
-	workerMapMx.Lock()
-	defer workerMapMx.Unlock()
-
 	if content == "" || len(content) <= 0 {
 		return
 	}
 
+	workerMapMx.Lock()
 	w, ok := workerMap[chainName]
+	workerMapMx.Unlock()
 
 	if !ok {
 		w = newWorker(chainName)
+		fmt.Println(w)
 	}
 
 	w.addInput(content)

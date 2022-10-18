@@ -12,6 +12,12 @@ type StartInstructions struct {
 	Debug       bool
 }
 
+type OutputInstructions struct {
+	Chain  string
+	Method string
+	Target string
+}
+
 type worker struct {
 	Name         string
 	Chain        chain
@@ -39,4 +45,9 @@ type word struct {
 type input struct {
 	Name    string
 	Content string
+}
+
+type wRand struct {
+	Word  string
+	Value int
 }
