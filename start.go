@@ -17,7 +17,7 @@ func Start(sI StartInstructions) error {
 	WriteCountLimit = sI.WriteLimit
 	startKey = sI.StartKey
 	endKey = sI.EndKey
-	debug = true
+	debug = sI.Debug
 
 	createChainsFolder()
 

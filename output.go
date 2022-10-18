@@ -40,6 +40,12 @@ func LikelyBeginning(name string) (output string, err error) {
 
 				if child == endKey {
 					parentSplit := strings.Split(parent, " ")
+
+					if len(parentSplit) == 1 {
+						output = output + parent
+						return output, nil
+					}
+
 					output = output + parentSplit[1]
 					return output, nil
 				} else {
@@ -101,6 +107,12 @@ func TargetedBeginning(name string, target string) (output string, err error) {
 
 				if child == endKey {
 					parentSplit := strings.Split(parent, " ")
+
+					if len(parentSplit) == 1 {
+						output = output + parent
+						return output, nil
+					}
+
 					output = output + parentSplit[1]
 					return output, nil
 				} else {
