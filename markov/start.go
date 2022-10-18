@@ -1,4 +1,4 @@
-package main
+package markov
 
 var (
 	writeMode       string

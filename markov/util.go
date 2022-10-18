@@ -1,4 +1,4 @@
-package main
+package markov
 
 import (
 	"encoding/json"
@@ -176,7 +176,7 @@ func weightedRandom(itemsAndWeights []wRand) string {
 }
 
 func createChainsFolder() {
-	// Create or check if main markov db folder exists
+	// Create or check if markov markov db folder exists
 	_, dberr := os.Stat("./markov/chains")
 	if os.IsNotExist(dberr) {
 		err := os.MkdirAll("./markov/chains", 0755)
