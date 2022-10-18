@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
 
-	wr "github.com/mroth/weightedrand"
+	"github.com/jmcvetta/randutil"
 )
 
 func debugLog(v ...any) {
@@ -19,7 +20,7 @@ func debugLog(v ...any) {
 }
 
 func chains() []string {
-	files, err := ioutil.ReadDir("./chains/")
+	files, err := ioutil.ReadDir("./markov/chains/")
 	var s []string
 	if err != nil {
 		// fmt.Println("pass")
@@ -36,7 +37,7 @@ func now() string {
 }
 
 func jsonToChain(name string) (c chain, err error) {
-	path := "./chains/" + name + ".json"
+	path := "./markov/chains/" + name + ".json"
 	file, err := os.Open(path)
 	if err != nil {
 		debugLog("Failed reading file:", err)
@@ -54,7 +55,7 @@ func jsonToChain(name string) (c chain, err error) {
 }
 
 func chainToJson(c chain, name string) {
-	path := "./chains/" + name + ".json"
+	path := "./markov/chains/" + name + ".json"
 
 	chainData, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
@@ -142,26 +143,55 @@ func ChainPeakIntake() struct {
 }
 
 func weightedRandom(itemsAndWeights []wRand) string {
-	// Create variable for slice of choice struct
-	var choices []wr.Choice
+	var choices []randutil.Choice
 
-	for _, item := range itemsAndWeights { // For every child, value in map
+	for _, item := range itemsAndWeights {
 		word := item.Word
 		value := item.Value
-		choices = append(choices, wr.Choice{Item: word, Weight: uint(value)}) // Add item, value to choices
+		choices = append(choices, randutil.Choice{Weight: value, Item: word})
 	}
 
-	chooser, _ := wr.NewChooser(choices...) // Initialize chooser
-	return chooser.Pick().(string)          // Choose
+	choice, err := randutil.WeightedChoice(choices)
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%v", choice.Item)
+
+	// // Create variable for slice of choice struct
+	// var choices []wr.Choice
+
+	// for _, item := range itemsAndWeights { // For every child, value in map
+	// 	word := item.Word
+	// 	value := item.Value
+	// 	choices = append(choices, wr.Choice{Item: word, Weight: uint(value)}) // Add item, value to choices
+	// }
+
+	// chooser, err := wr.NewChooser(choices...) // Initialize chooser
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// return chooser.Pick().(string) // Choose
 }
 
 func createChainsFolder() {
 	// Create or check if main markov db folder exists
-	_, dberr := os.Stat("./chains")
+	_, dberr := os.Stat("./markov/chains")
 	if os.IsNotExist(dberr) {
-		err := os.MkdirAll("./chains", 0755)
+		err := os.MkdirAll("./markov/chains", 0755)
 		if err != nil {
 			panic(err)
 		}
 	}
+}
+
+func RandomNumber(min int, max int) (num int) {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	num = r.Intn(max-min) + min
+	return num
+}
+
+func PickRandomFromSlice(slice []string) string {
+	return slice[RandomNumber(0, len(slice))]
 }

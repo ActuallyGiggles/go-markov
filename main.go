@@ -13,10 +13,15 @@ func main() {
 		EndKey:     "!E",
 	})
 
-	//In("test", "this is a pie")
+	//In("test", "i am dead")
+
+	//time.Sleep temporarily here because main exits faster than the goroutine
+	time.Sleep(1 * time.Second)
 
 	oi := OutputInstructions{
-		Chain: "test",
+		Chain:  "test",
+		Method: "TargetedBeginning",
+		Target: "i",
 	}
 	output, err := Out(oi)
 
@@ -25,7 +30,4 @@ func main() {
 	}
 
 	fmt.Println(output)
-
-	//time.Sleep temporarily here because main exits faster than the goroutine
-	time.Sleep(1 * time.Second)
 }
