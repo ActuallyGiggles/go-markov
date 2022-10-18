@@ -20,7 +20,7 @@ func debugLog(v ...any) {
 }
 
 func chains() []string {
-	files, err := ioutil.ReadDir("./markov/chains/")
+	files, err := ioutil.ReadDir("./markov-chains/")
 	var s []string
 	if err != nil {
 		// fmt.Println("pass")
@@ -37,7 +37,7 @@ func now() string {
 }
 
 func jsonToChain(name string) (c chain, err error) {
-	path := "./markov/chains/" + name + ".json"
+	path := "./markov-chains/" + name + ".json"
 	file, err := os.Open(path)
 	if err != nil {
 		debugLog("Failed reading file:", err)
@@ -55,7 +55,7 @@ func jsonToChain(name string) (c chain, err error) {
 }
 
 func chainToJson(c chain, name string) {
-	path := "./markov/chains/" + name + ".json"
+	path := "./markov-chains/" + name + ".json"
 
 	chainData, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
@@ -177,9 +177,9 @@ func weightedRandom(itemsAndWeights []wRand) string {
 
 func createChainsFolder() {
 	// Create or check if markov markov db folder exists
-	_, dberr := os.Stat("./markov/chains")
+	_, dberr := os.Stat("./markov-chains")
 	if os.IsNotExist(dberr) {
-		err := os.MkdirAll("./markov/chains", 0755)
+		err := os.MkdirAll("./markov-chains", 0755)
 		if err != nil {
 			panic(err)
 		}
