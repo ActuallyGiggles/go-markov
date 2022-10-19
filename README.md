@@ -14,8 +14,7 @@ import "github.com/ActuallyGiggles/go-markov"
 func main() {
 	i := markov.StartInstructions{
 			Workers:       5,
-			WriteInterval: 10,
-			IntervalUnit:  "minutes",
+			
 			StartKey:      "start",
 			EndKey:        "end",
 	}
