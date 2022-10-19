@@ -18,10 +18,10 @@ import (
 
 func main() {
 	i := markov.StartInstructions{
-			Workers:       5,
-			
-			StartKey:      "start",
-			EndKey:        "end",
+		WriteMode:  "counter",
+		WriteLimit: 10000,
+		StartKey:   "b5G(n1$I!4g",
+		EndKey:     "e1$D(n7",
 	}
 
 	markov.Start(i)
