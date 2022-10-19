@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Out takes output instructions and returns an output and error.
 func Out(oi OutputInstructions) (output string, err error) {
 	name := oi.Chain
 	method := oi.Method
@@ -153,7 +154,7 @@ func getNextWord(parent parent) (child string) {
 }
 
 func pickRandomParent(parents []string) (parent string) {
-	parent = PickRandomFromSlice(parents)
+	parent = pickRandomFromSlice(parents)
 
 	return parent
 }
