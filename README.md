@@ -9,7 +9,12 @@ go get "github.com/ActuallyGiggles/go-markov"
 ```go
 package main
 
-import "github.com/ActuallyGiggles/go-markov"
+import (
+	"fmt"
+	"log"
+	
+	"github.com/ActuallyGiggles/go-markov"
+)
 
 func main() {
 	i := markov.StartInstructions{
@@ -29,8 +34,11 @@ func main() {
 			Target: "This",
 	}
 
-	output, problem := markov.Output(oi)
+	output, err := markov.Output(oi)
+	
+	if err != nil {
+		log.Println(err)
+	}
 	
 	fmt.Println(output)
-	fmt.Println(problem)
 }
