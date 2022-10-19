@@ -1,1 +1,4 @@
-.history/
+/markov/chains/
+*.json
+/.history/
+main.go

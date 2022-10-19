@@ -1,88 +1,38 @@
 package markov
 
-import (
-	"fmt"
-	"time"
-)
-
 var (
-	workers       int
-	writeInterval int
-	intervalUnit  string
-	startKey      string
-	endKey        string
-	Debug         bool
-
-	nextWriteTime time.Time
-	peakIntake    struct {
-		Amount int
-		Time   time.Time
-	}
+	writeMode       string
+	writeInterval   int
+	intervalUnit    string
+	WriteCountLimit int
+	startKey        string
+	endKey          string
+	debug           bool
 )
 
-// Start initializes the Markov  package.
-//
-// Takes:
-//		StartInstructions {
-// 			Workers       int
-// 			WriteInterval int
-//			IntervalUnit  string
-// 			StartKey      string
-// 			EndKey        string
-// 		}
-func Start(instructions StartInstructions) {
-	createChains()
+func Start(sI StartInstructions) error {
+	writeMode = sI.WriteMode
+	writeInterval = sI.WriteTicker
+	intervalUnit = sI.TickerUnit
+	WriteCountLimit = sI.WriteLimit
+	startKey = sI.StartKey
+	endKey = sI.EndKey
+	debug = sI.Debug
 
-	workers = instructions.Workers
-	writeInterval = instructions.WriteInterval
-	intervalUnit = instructions.IntervalUnit
-	startKey = instructions.StartKey
-	endKey = instructions.EndKey
-
-	toWorker = make(chan input)
+	createChainsFolder()
 
 	startWorkers()
 
-	go writeTicker()
-}
-
-func writeTicker() {
-	var unit time.Duration
-
-	switch intervalUnit {
-	default:
-		unit = time.Minute
-	case "seconds":
-		unit = time.Second
-	case "minutes":
-		unit = time.Minute
-	case "hours":
-		unit = time.Hour
+	if writeMode == "interval" {
+		go writeTicker()
 	}
 
-	nextWriteTime = time.Now().Add(time.Duration(writeInterval) * unit)
-	for range time.Tick(time.Duration(writeInterval) * unit) {
-		nextWriteTime = time.Now().Add(time.Duration(writeInterval) * unit)
+	return nil
+}
 
-		writing := 0
-		for _, w := range workerMap {
-			if Debug {
-				fmt.Printf("Worker %d is writing...", w.ID)
-				fmt.Println()
-			}
-
-			if w.Intake > peakIntake.Amount {
-				peakIntake.Amount = w.Intake
-				peakIntake.Time = time.Now()
-			}
-
-			if writing >= workers-1 {
-				w.writeToChain()
-				writing = 0
-				continue
-			}
-			go w.writeToChain()
-			writing += 1
-		}
+func startWorkers() {
+	chains := chains()
+	for _, name := range chains {
+		newWorker(name)
 	}
 }

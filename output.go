@@ -1,219 +1,159 @@
 package markov
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-	"sync"
 )
 
-var (
-	recursionCounter   = make(map[string]int)
-	recursionCounterMx sync.Mutex
-)
+func Out(oi OutputInstructions) (output string, err error) {
+	name := oi.Chain
+	method := oi.Method
+	target := oi.Target
 
-func Output(instructions OutputInstructions) (output string, problem string) {
-	c := make(chan result)
-	go outputController(instructions, c)
-	r := <-c
-
-	return r.Output, r.Problem
-}
-
-func outputController(i OutputInstructions, outputC chan result) {
-	var r result
-	c := make(chan result)
-
-	switch i.Method {
+	switch method {
 	case "LikelyBeginning":
-		go likelyBeginning(i, c)
-		r = <-c
+		output, err = LikelyBeginning(name)
 	case "TargetedBeginning":
-		go targetedBeginning(i, c)
-		r = <-c
-	case "LikelyEnd":
-	case "TargetedEnd":
-	case "TargetedMiddle":
+		output, err = TargetedBeginning(name, target)
 	}
 
-	if r.Problem == "" {
-		outputC <- r
-		return
-	} else {
-		recursionCounterMx.Lock()
-		recursionCounter[i.Chain] += 1
-
-		if recursionCounter[i.Chain] > 5 {
-			recursionCounter[i.Chain] = 0
-			recursionCounterMx.Unlock()
-			outputC <- r
-			return
-		} else {
-			recursionCounterMx.Unlock()
-			go outputController(i, outputC)
-		}
-	}
-	return
+	return output, err
 }
 
-func likelyBeginning(i OutputInstructions, c chan result) {
-	sentence := ""
+func LikelyBeginning(name string) (output string, err error) {
+	output = ""
+	parent := startKey
 	child := ""
-	splitChild := make([]string, 0)
-	nextParent := startKey
-	message := result{
-		Output:  "",
-		Problem: "",
-	}
 
-	chain, exists := jsonToChain("./markov/chains/" + i.Chain + ".json")
-	if !exists {
-		message.Output = ""
-		message.Problem = i.Chain + " does not exist."
-		c <- message
-		close(c)
-		return
+	c, err := jsonToChain(name)
+	if err != nil {
+		return "", err
 	}
 
 	for true {
-		if list, ok := chain[nextParent]; !ok {
-			message.Output = ""
-			message.Problem = i.Chain + " has no messages."
-			c <- message
-			close(c)
-			return
-		} else {
-			list := list["nextList"]
-			child = weightedRandom(list)
-		}
+		parentExists := false
+		for _, cParent := range c.Parents {
+			if cParent.Word == parent {
+				parentExists = true
+				child = getNextWord(cParent)
 
-		if child == endKey {
-			if len(strings.Split(nextParent, " ")) == 1 {
-				message.Output = sentence + nextParent
-			} else {
-				message.Output = sentence + splitChild[1]
-			}
-			c <- message
-			close(c)
-			return
-		}
+				if child == endKey {
+					parentSplit := strings.Split(parent, " ")
 
-		splitChild = strings.Split(child, " ")
+					if len(parentSplit) == 1 {
+						output = output + parent
+						return output, nil
+					}
 
-		if !doesSliceContainIndex(splitChild, 1) {
-			if sentence == "" {
-				sentence = child
-			}
-			message.Output = sentence
-			c <- message
-			close(c)
-			return
-		} else {
-			nextParent = child
-			sentence = sentence + splitChild[0] + " "
-		}
-	}
-	message.Output = sentence
-	c <- message
-	close(c)
-	return
-}
+					output = output + parentSplit[1]
+					return output, nil
+				} else {
+					childSplit := strings.Split(child, " ")
+					output = output + childSplit[0] + " "
 
-func targetedBeginning(i OutputInstructions, c chan result) {
-	sentence := i.Target + " "
-	child := ""
-	splitChild := make([]string, 0)
-	nextParent := startKey
-	message := result{
-		Output:  "",
-		Problem: "",
-	}
-
-	// Check if chain exists and get it back as json
-	chain, exists := jsonToChain("./markov/chains/" + i.Chain + ".json")
-	if !exists {
-		message.Output = ""
-		message.Problem = i.Chain + " does not exist."
-		c <- message
-		close(c)
-		return
-	}
-
-	options := make(map[string]int)
-
-	// If exists and if the first word of a child matches the word that was chosen, add it to the list
-	if list, ok := chain[nextParent]; !ok {
-		message.Output = ""
-		message.Problem = i.Chain + " has no messages."
-		c <- message
-		close(c)
-		return
-	} else {
-		for _, combo := range list {
-			for child, value := range combo {
-				firstWordInChild := strings.Split(child, " ")[0]
-				if firstWordInChild == i.Target {
-					options[child] = value
+					parent = child
+					continue
 				}
 			}
 		}
+
+		if !parentExists {
+			return output, errors.New(fmt.Sprintf("parent %s does not exist in chain %s", parent, name))
+		}
 	}
 
-	// If no phrase starts with word, ~~recurse~~ or ignore
-	if len(options) == 0 {
-		message.Output = ""
-		message.Problem = "ERROR: no phrase starts with \"" + i.Target + "\" \nSource -> " + i.Chain + " " + nextParent
-		c <- message
-		close(c)
-		return
+	return output, nil
+}
+
+func TargetedBeginning(name string, target string) (output string, err error) {
+	output = ""
+	parent := ""
+	child := ""
+
+	c, err := jsonToChain(name)
+	if err != nil {
+		return "", err
 	}
 
-	// Randomly choose a starting phrase that starts with the word
-	nextParent = weightedRandom(options)
+	initial := true
+	var initialList []string
 
 	for true {
-		// Look for the nextParent in the chain, if it doesn't exist, return
-		if list, ok := chain[nextParent]; !ok {
-			message.Output = ""
-			message.Problem = fmt.Sprintf("ERROR: %s does not contain nextParent: %s, even though %s was chosen in getSentenceFromAStart", i.Chain, nextParent, nextParent)
-			c <- message
-			close(c)
-			return
-		} else {
-			list := list["nextList"]
-			child = weightedRandom(list)
+		parentExists := false
+		for parentNumber, cParent := range c.Parents {
+			if initial {
+				if parentNumber >= len(c.Parents)-1 {
+					initial = false
+					parentExists = true
+					if len(initialList) <= 0 {
+						return "", errors.New(fmt.Sprintf("%s does not contain parents that match: %s", name, target))
+					}
+					parent = pickRandomParent(initialList)
+					parentSplit := strings.Split(parent, " ")
+					output = parentSplit[0] + " "
+					break
+				}
+
+				potentialParentSplit := strings.Split(cParent.Word, " ")
+				if potentialParentSplit[0] == target {
+					initialList = append(initialList, cParent.Word)
+					continue
+				} else {
+					continue
+				}
+			}
+
+			if cParent.Word == parent {
+				parentExists = true
+				child = getNextWord(cParent)
+
+				if child == endKey {
+					parentSplit := strings.Split(parent, " ")
+
+					if len(parentSplit) == 1 {
+						output = output + parent
+						return output, nil
+					}
+
+					output = output + parentSplit[1]
+					return output, nil
+				} else {
+					childSplit := strings.Split(child, " ")
+					output = output + childSplit[0] + " "
+
+					parent = child
+					continue
+				}
+			}
 		}
 
-		if child == endKey {
-			if len(strings.Split(nextParent, " ")) == 1 {
-				message.Output = sentence
-			} else {
-				splitNextParent := strings.Split(nextParent, " ")
-				message.Output = sentence + splitNextParent[1]
-			}
-			c <- message
-			close(c)
-			return
-		}
-
-		splitChild = strings.Split(child, " ")
-
-		// If child is one word, add to sentence
-		// Else, take the second word and prepare it to be searched
-		if !doesSliceContainIndex(splitChild, 1) {
-			if sentence == "" {
-				sentence = child
-			}
-			message.Output = sentence
-			c <- message
-			close(c)
-			return
-		} else {
-			nextParent = child
-			sentence = sentence + splitChild[0] + " "
+		if !parentExists {
+			return output, errors.New(fmt.Sprintf("%s does not contain parent: %s", name, parent))
 		}
 	}
-	message.Output = sentence
-	c <- message
-	close(c)
-	return
+
+	return output, nil
+}
+
+func getNextWord(parent parent) (child string) {
+	var wrS []wRand
+	for _, word := range parent.Next {
+		w := word.Word
+		v := word.Value
+		item := wRand{
+			Word:  w,
+			Value: v,
+		}
+		wrS = append(wrS, item)
+	}
+	child = weightedRandom(wrS)
+
+	return child
+}
+
+func pickRandomParent(parents []string) (parent string) {
+	parent = PickRandomFromSlice(parents)
+
+	return parent
 }
