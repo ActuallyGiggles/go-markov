@@ -1,11 +1,11 @@
 # go-markov
 Simple Markov chain input and output. :)
 
+Get package.
 ```go
 go get "github.com/ActuallyGiggles/go-markov"
 ```
 
-Import package.
 ```go
 package main
 
