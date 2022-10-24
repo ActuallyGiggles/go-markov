@@ -5,14 +5,12 @@ import (
 )
 
 var (
-	TotalCount      int
 	CurrentCount    int
 	nextWriteTime   time.Time
 	peakChainIntake PeakIntakeStruct
 )
 
 func writeCounter() {
-	TotalCount += 1
 	if writeMode == "counter" {
 		CurrentCount += 1
 		if CurrentCount > WriteCountLimit {
