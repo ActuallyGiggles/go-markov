@@ -78,12 +78,10 @@ func chainToJson(c chain, name string) {
 		fileSize := fileStat.Size()
 		change := int64(n2) - fileSize
 
-		if change < 0 {
+		if change >= 0 {
 			debugLog("wrote successfully to", path)
 			debugLog(int64(n2), "-", fileSize, "=", change)
 		} else {
-			fmt.Println("wrote unsuccessfully to", path)
-			fmt.Println(int64(n2), "-", fileSize, "=", change)
 			debugLog("wrote unsuccessfully to", path)
 			debugLog(int64(n2), "-", fileSize, "=", change)
 		}
