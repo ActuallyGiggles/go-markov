@@ -1,7 +1,6 @@
 package markov
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -9,6 +8,13 @@ var (
 	workerMap   = make(map[string]*worker)
 	workerMapMx sync.Mutex
 )
+
+func startWorkers() {
+	chains := chains()
+	for _, name := range chains {
+		newWorker(name)
+	}
+}
 
 func newWorker(name string) *worker {
 	var w *worker
@@ -22,104 +28,6 @@ func newWorker(name string) *worker {
 	workerMapMx.Unlock()
 
 	return w
-}
-
-func (w *worker) addInput(content string) {
-	w.ChainMx.Lock()
-	defer w.ChainMx.Unlock()
-
-	contentToChain(&w.Chain, w.Name, content)
-	w.Intake += 1
-}
-
-func (w *worker) writeToFile() {
-	defer duration(track(w.Name))
-
-	w.ChainMx.Lock()
-	defer w.ChainMx.Unlock()
-
-	eC, err := jsonToChain(w.Name)
-	if err != nil {
-		fmt.Println(err)
-		chainToJson(w.Chain, w.Name)
-		w.Intake = 0
-		w.Chain = chain{}
-	} else {
-		var chainToWrite chain
-
-		for _, nParent := range w.Chain.Parents {
-			parentMatch := false
-			for eParentIndex, eParent := range eC.Parents {
-				if eParent.Word == nParent.Word {
-					parentMatch = true
-
-					uParent := parent{
-						Word: eParent.Word,
-					}
-
-					for _, nChild := range nParent.Next {
-						childMatch := false
-						for eChildIndex, eChild := range eParent.Next {
-							if eChild.Word == nChild.Word {
-								childMatch = true
-
-								uParent.Next = append(uParent.Next, word{
-									Word:  eChild.Word,
-									Value: eChild.Value + nChild.Value,
-								})
-
-								eParent.Next = removeCorGP(eParent.Next, eChildIndex)
-							}
-						}
-						if !childMatch {
-							uParent.Next = append(uParent.Next, nChild)
-						}
-					}
-
-					for _, eChild := range eParent.Next {
-						uParent.Next = append(uParent.Next, eChild)
-					}
-
-					for _, nGrandparent := range nParent.Previous {
-						GrandparentMatch := false
-						for eGrandparentIndex, eGrandparent := range eParent.Previous {
-							if eGrandparent.Word == nGrandparent.Word {
-								GrandparentMatch = true
-
-								uParent.Previous = append(uParent.Previous, word{
-									Word:  eGrandparent.Word,
-									Value: eGrandparent.Value + nGrandparent.Value,
-								})
-
-								eParent.Previous = removeCorGP(eParent.Previous, eGrandparentIndex)
-							}
-						}
-						if !GrandparentMatch {
-							uParent.Previous = append(uParent.Previous, nGrandparent)
-						}
-					}
-
-					for _, eGrandparent := range eParent.Previous {
-						uParent.Previous = append(uParent.Previous, eGrandparent)
-					}
-
-					chainToWrite.Parents = append(chainToWrite.Parents, uParent)
-					eC.Parents = removeParent(eC.Parents, eParentIndex)
-				}
-			}
-			if !parentMatch {
-				chainToWrite.Parents = append(chainToWrite.Parents, nParent)
-			}
-		}
-
-		for _, eParent := range eC.Parents {
-			chainToWrite.Parents = append(chainToWrite.Parents, eParent)
-		}
-
-		chainToJson(chainToWrite, w.Name)
-		w.Intake = 0
-		w.Chain = chain{}
-	}
 }
 
 // WorkersStats returns a slice of type WorkerStats.
