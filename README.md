@@ -1,5 +1,5 @@
 # go-markov
-Simple Markov chain input and output. :)
+Simple Markov chain input and output potentially large files. :)
 
 Get package.
 ```go
