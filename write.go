@@ -2,6 +2,7 @@ package markov
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 )
@@ -40,7 +41,12 @@ func writeTicker() {
 
 func writeLoop() {
 	for _, w := range workerMap {
+		w.ChainMx.Lock()
+		debugLog("Write Locked")
+
 		if w.Intake == 0 {
+			w.ChainMx.Unlock()
+			debugLog("Write Unlocked")
 			continue
 		}
 
@@ -53,9 +59,13 @@ func writeLoop() {
 
 		w.writeHead()
 		w.writeTail()
+		w.writeBody()
 
 		w.Chain.Parents = nil
 		w.Intake = 0
+
+		w.ChainMx.Unlock()
+		debugLog("Write Unlocked")
 	}
 
 	writeInputsCounter = 0
@@ -63,10 +73,9 @@ func writeLoop() {
 }
 
 func (w *worker) writeHead() {
-	defer duration(track("[WRITE HEAD] " + w.Name))
+	//defer duration(track("[WRITE HEAD] " + w.Name))
 
-	w.ChainMx.Lock()
-	defer w.ChainMx.Unlock()
+	fmt.Println("Writing head")
 
 	defaultPath := "./markov-chains/" + w.Name + "_head.json"
 	newPath := "./markov-chains/" + w.Name + "_head_new.json"
@@ -93,11 +102,11 @@ func (w *worker) writeHead() {
 				panic(err)
 			}
 
-			enc := encode{
-				File: fN,
-			}
+			var enc encode
 
-			StartEncoder(&enc)
+			if err = StartEncoder(&enc, fN); err != nil {
+				panic(err)
+			}
 
 			for i, parent := range *&w.Chain.Parents {
 				if parent.Word == startKey {
@@ -123,6 +132,8 @@ func (w *worker) writeHead() {
 								})
 
 								parent.removeChild(j)
+
+								continue
 							}
 						}
 
@@ -158,13 +169,108 @@ func (w *worker) writeHead() {
 }
 
 func (w *worker) writeTail() {
-	defer duration(track("[WRITE TAIL] " + w.Name))
+	//defer duration(track("[WRITE HEAD] " + w.Name))
 
-	w.ChainMx.Lock()
-	defer w.ChainMx.Unlock()
+	fmt.Println("Writing tail")
 
 	defaultPath := "./markov-chains/" + w.Name + "_tail.json"
 	newPath := "./markov-chains/" + w.Name + "_tail_new.json"
+
+	// Open existing chain file
+	f, err := os.OpenFile(defaultPath, os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	} else {
+		// Start a new decoder
+		dec := json.NewDecoder(f)
+
+		// Get beginning token
+		_, err = dec.Token()
+		if err != nil {
+			chainData, _ := json.MarshalIndent(w.Chain.Parents[0].Grandparents, "", "    ")
+			w.Chain.removeParent(0)
+			f.Write(chainData)
+			f.Close()
+			return
+		} else {
+			fN, err := os.OpenFile(newPath, os.O_CREATE, 0666)
+			if err != nil {
+				panic(err)
+			}
+
+			var enc encode
+
+			if err = StartEncoder(&enc, fN); err != nil {
+				panic(err)
+			}
+
+			for i, parent := range *&w.Chain.Parents {
+				if parent.Word == endKey {
+
+					for dec.More() {
+						var existingGrandparent grandparent
+
+						err := dec.Decode(&existingGrandparent)
+						if err != nil {
+							panic(err)
+						}
+
+						grandparentMatch := false
+
+						for j, newGrandparent := range *&parent.Grandparents {
+
+							if newGrandparent.Word == existingGrandparent.Word {
+								grandparentMatch = true
+
+								enc.AddEntry(child{
+									Word:  newGrandparent.Word,
+									Value: newGrandparent.Value + existingGrandparent.Value,
+								})
+
+								parent.removeGrandparent(j)
+
+								continue
+							}
+						}
+
+						if !grandparentMatch {
+							enc.AddEntry(existingGrandparent)
+						}
+					}
+
+					for _, c := range *&parent.Grandparents {
+						enc.AddEntry(c)
+					}
+
+					w.Chain.removeParent(i)
+				}
+			}
+
+			enc.CloseEncoder()
+			fN.Close()
+		}
+	}
+
+	f.Close()
+
+	err = os.Remove(defaultPath)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.Rename(newPath, defaultPath)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (w *worker) writeBody() {
+	//defer duration(track("[WRITE TAIL] " + w.Name))
+
+	fmt.Println("Writing body")
+
+	defaultPath := "./markov-chains/" + w.Name + "_body.json"
+	newPath := "./markov-chains/" + w.Name + "_body_new.json"
 
 	// Open existing chain file
 	f, err := os.OpenFile(defaultPath, os.O_CREATE, 0666)
@@ -187,11 +293,9 @@ func (w *worker) writeTail() {
 				panic(err)
 			}
 
-			enc := encode{
-				File: fN,
-			}
+			var enc encode
 
-			StartEncoder(&enc)
+			StartEncoder(&enc, fN)
 
 			// For every new item in the existing chain
 			for dec.More() {
@@ -213,6 +317,7 @@ func (w *worker) writeTail() {
 							Word: newParent.Word,
 						}
 
+						// Do for child
 						// combine values and set into updatedChain
 						for _, existingChild := range *&existingParent.Children {
 							childMatch := false
@@ -239,6 +344,35 @@ func (w *worker) writeTail() {
 
 						for _, newChild := range newParent.Children {
 							uParent.Children = append(uParent.Children, newChild)
+						}
+
+						// Do for grandparent
+						// combine values and set into updatedChain
+						for _, existingGrandparent := range *&existingParent.Grandparents {
+							grandparentMatch := false
+
+							for nPIndex, newGrandparent := range *&newParent.Grandparents {
+
+								if newGrandparent.Word == existingGrandparent.Word {
+									grandparentMatch = true
+
+									uParent.Grandparents = append(uParent.Grandparents, grandparent{
+										Word:  newGrandparent.Word,
+										Value: newGrandparent.Value + existingGrandparent.Value,
+									})
+
+									newParent.removeGrandparent(nPIndex)
+									break
+								}
+							}
+
+							if !grandparentMatch {
+								uParent.Grandparents = append(uParent.Grandparents, existingGrandparent)
+							}
+						}
+
+						for _, newGrandparent := range newParent.Grandparents {
+							uParent.Grandparents = append(uParent.Grandparents, newGrandparent)
 						}
 
 						enc.AddEntry(uParent)

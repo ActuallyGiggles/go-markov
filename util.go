@@ -151,20 +151,15 @@ func createFolders() {
 	}
 }
 
-// func removeChild(s []child, i int) []child {
-// 	s[i] = s[len(s)-1]
-// 	return s[:len(s)-1]
-// }
+func (p *parent) removeGrandparent(i int) {
+	p.Grandparents[i] = p.Grandparents[len(p.Grandparents)-1]
+	p.Grandparents = p.Grandparents[:len(p.Grandparents)-1]
+}
 
 func (p *parent) removeChild(i int) {
 	p.Children[i] = p.Children[len(p.Children)-1]
 	p.Children = p.Children[:len(p.Children)-1]
 }
-
-// func removeParent(s []parent, i int) []parent {
-// 	s[i] = s[len(s)-1]
-// 	return s[:len(s)-1]
-// }
 
 func (c *chain) removeParent(i int) {
 	c.Parents[i] = c.Parents[len(c.Parents)-1]
@@ -196,14 +191,15 @@ func randomNumber(min, max int) (int, error) {
 	return result, nil
 }
 
-func StartEncoder(enc *encode) (err error) {
-	if _, err = enc.File.Write([]byte{'['}); err != nil {
+func StartEncoder(enc *encode, file *os.File) (err error) {
+	if _, err = file.Write([]byte{'['}); err != nil {
 		return err
 	}
 
-	encoder := json.NewEncoder(enc.File)
+	encoder := json.NewEncoder(file)
 
 	enc.Encoder = encoder
+	enc.File = file
 
 	return nil
 }
