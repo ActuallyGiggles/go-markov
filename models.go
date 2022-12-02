@@ -33,8 +33,8 @@ type StartInstructions struct {
 // 		"LikelyBeginning": Start with a likely beginning word.
 //		"TargetedBeginning": Start with a specific beginning word.
 // 		"TargetedMiddle": Generate a message with a specific middle word. (yet to implement)
-//		"TargetedEnd": End with a specific ending word.
-// 		"LikelyEnd": End with a likely ending word.
+//		"TargetedEnding": End with a specific ending word.
+// 		"LikelyEnding": End with a likely ending word.
 type OutputInstructions struct {
 	Chain  string
 	Method string

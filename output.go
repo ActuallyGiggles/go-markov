@@ -120,7 +120,11 @@ func likelyEnding(name string) (output string, err error) {
 		return "", err
 	}
 
-	output = strings.Split(parentWord, " ")[1] + " "
+	if s := strings.Split(parentWord, " "); len(s) > 1 {
+		output = s[1] + " "
+	} else {
+		output = s[0] + " "
+	}
 
 	for true {
 		f, err := os.Open("./markov-chains/" + name + "_body.json")
@@ -307,11 +311,20 @@ func targetedEnding(name, target string) (output string, err error) {
 
 		potentialParentSplit := strings.Split(currentParent.Word, " ")
 
-		if potentialParentSplit[1] == target {
-			initialList = append(initialList, Choice{
-				Word:   currentParent.Word,
-				Weight: currentParent.Value,
-			})
+		if len(potentialParentSplit) == 1 {
+			if potentialParentSplit[0] == target {
+				initialList = append(initialList, Choice{
+					Word:   currentParent.Word,
+					Weight: currentParent.Value,
+				})
+			}
+		} else {
+			if potentialParentSplit[1] == target {
+				initialList = append(initialList, Choice{
+					Word:   currentParent.Word,
+					Weight: currentParent.Value,
+				})
+			}
 		}
 	}
 
@@ -324,7 +337,11 @@ func targetedEnding(name, target string) (output string, err error) {
 		return "", err
 	}
 	parentSplit := strings.Split(parentWord, " ")
-	output = parentSplit[1] + " "
+	if len(parentSplit) == 1 {
+		output = parentSplit[0] + " "
+	} else {
+		output = parentSplit[1] + " "
+	}
 
 	for true {
 		f, err := os.Open("./markov-chains/" + name + "_body.json")
@@ -409,22 +426,35 @@ func targetedMiddle(name, target string) (output string, err error) {
 
 		potentialParentSplit := strings.Split(currentParent.Word, " ")
 
-		if potentialParentSplit[0] == target {
-			var totalWeight int
-
-			for _, child := range currentParent.Children {
-				totalWeight += child.Value
+		if len(potentialParentSplit) == 2 {
+			if potentialParentSplit[0] == target || potentialParentSplit[1] == target {
+				goto addParent
+			} else {
+				continue
 			}
-
-			for _, grandparent := range currentParent.Grandparents {
-				totalWeight += grandparent.Value
+		} else {
+			if potentialParentSplit[0] == target {
+				goto addParent
+			} else {
+				continue
 			}
-
-			initialList = append(initialList, Choice{
-				Word:   currentParent.Word,
-				Weight: totalWeight,
-			})
 		}
+
+	addParent:
+		var totalWeight int
+
+		for _, child := range currentParent.Children {
+			totalWeight += child.Value
+		}
+
+		for _, grandparent := range currentParent.Grandparents {
+			totalWeight += grandparent.Value
+		}
+
+		initialList = append(initialList, Choice{
+			Word:   currentParent.Word,
+			Weight: totalWeight,
+		})
 	}
 
 	if len(initialList) <= 0 {
@@ -435,8 +465,8 @@ func targetedMiddle(name, target string) (output string, err error) {
 	if err != nil {
 		return "", err
 	}
-	parentSplit := strings.Split(parentWord, " ")
-	prefixToTrim := parentSplit[1] + " "
+
+	firstParentWord := parentWord
 
 	var forwardComplete bool
 
@@ -467,25 +497,35 @@ func targetedMiddle(name, target string) (output string, err error) {
 
 				// Build forwards
 				if !forwardComplete {
-					childChosen = getNextWord(currentParent)
-					if childChosen == endKey {
-						parentSplit := strings.Split(parentWord, " ")
-						output = output + parentSplit[1]
-						forwardComplete = true
-						output = strings.TrimPrefix(output, prefixToTrim)
+					goto forward
+				} else {
 
-						// Forwards is done, move onto building backwards
-						fmt.Println(output)
-						break
-					} else {
-						cSplit := strings.Split(childChosen, " ")
-						output = output + cSplit[0] + " "
-						parentWord = childChosen
-
-						continue
-					}
+					goto backward
 				}
 
+			forward:
+				childChosen = getNextWord(currentParent)
+				if childChosen == endKey {
+					if parentSplit := strings.Split(parentWord, " "); len(parentSplit) == 1 {
+						output += parentSplit[0]
+					} else {
+						output += parentSplit[1]
+					}
+
+					forwardComplete = true
+
+					// Forwards is done, move onto building backwards
+					parentWord = firstParentWord
+					continue
+				} else {
+					cSplit := strings.Split(childChosen, " ")
+					output += cSplit[0] + " "
+					parentWord = childChosen
+
+					continue
+				}
+
+			backward:
 				// Build backwards
 				grandparentChosen = getPreviousWord(currentParent)
 				if grandparentChosen == startKey {

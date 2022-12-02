@@ -2,7 +2,6 @@ package markov
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"time"
 )
@@ -73,9 +72,7 @@ func writeLoop() {
 }
 
 func (w *worker) writeHead() {
-	//defer duration(track("[WRITE HEAD] " + w.Name))
-
-	fmt.Println("Writing head")
+	defer duration(track("[WRITE HEAD] " + w.Name))
 
 	defaultPath := "./markov-chains/" + w.Name + "_head.json"
 	newPath := "./markov-chains/" + w.Name + "_head_new.json"
@@ -169,9 +166,7 @@ func (w *worker) writeHead() {
 }
 
 func (w *worker) writeTail() {
-	//defer duration(track("[WRITE HEAD] " + w.Name))
-
-	fmt.Println("Writing tail")
+	defer duration(track("[WRITE HEAD] " + w.Name))
 
 	defaultPath := "./markov-chains/" + w.Name + "_tail.json"
 	newPath := "./markov-chains/" + w.Name + "_tail_new.json"
@@ -265,9 +260,7 @@ func (w *worker) writeTail() {
 }
 
 func (w *worker) writeBody() {
-	//defer duration(track("[WRITE TAIL] " + w.Name))
-
-	fmt.Println("Writing body")
+	defer duration(track("[WRITE TAIL] " + w.Name))
 
 	defaultPath := "./markov-chains/" + w.Name + "_body.json"
 	newPath := "./markov-chains/" + w.Name + "_body_new.json"
