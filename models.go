@@ -29,8 +29,6 @@ type StartInstructions struct {
 	StartKey string
 	EndKey   string
 
-	ReportDurations chan string
-
 	ShouldZip bool
 
 	Debug bool

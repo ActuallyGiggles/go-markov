@@ -13,8 +13,6 @@ var (
 	zipping bool
 	writing bool
 
-	durations chan string
-
 	stats Statistics
 )
 
@@ -29,8 +27,6 @@ func Start(sI StartInstructions) error {
 
 	startKey = sI.StartKey
 	endKey = sI.EndKey
-
-	durations = sI.ReportDurations
 
 	shouldZip = sI.ShouldZip
 	debug = sI.Debug

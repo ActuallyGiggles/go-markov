@@ -25,7 +25,7 @@ func zipTicker() {
 }
 
 func zipChains() {
-	defer report(track("zipping completed"))
+	defer duration(track("zip duration", ""))
 
 	debugLog("creating zip archive...")
 	archive, err := os.Create("markov-chains.zip")

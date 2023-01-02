@@ -65,9 +65,11 @@ zippingLoop:
 
 	debugLog("write loop started")
 
-	defer report(track("writing completed"))
+	defer duration(track("write duration", ""))
 
 	for _, w := range workerMap {
+		tP, tC, tT := track("write", w.Name)
+
 		w.ChainMx.Lock()
 
 		if w.Intake == 0 {
@@ -90,6 +92,8 @@ zippingLoop:
 		w.Intake = 0
 
 		w.ChainMx.Unlock()
+
+		duration(tP, tC, tT)
 	}
 
 	writeInputsCounter = 0
@@ -99,8 +103,6 @@ zippingLoop:
 }
 
 func (w *worker) writeHead() {
-	defer duration(track("[WRITE HEAD] " + w.Name))
-
 	defaultPath := "./markov-chains/" + w.Name + "_head.json"
 	newPath := "./markov-chains/" + w.Name + "_head_new.json"
 
@@ -193,8 +195,6 @@ func (w *worker) writeHead() {
 }
 
 func (w *worker) writeTail() {
-	defer duration(track("[WRITE TAIL] " + w.Name))
-
 	defaultPath := "./markov-chains/" + w.Name + "_tail.json"
 	newPath := "./markov-chains/" + w.Name + "_tail_new.json"
 
@@ -287,8 +287,6 @@ func (w *worker) writeTail() {
 }
 
 func (w *worker) writeBody() {
-	defer duration(track("[WRITE BODY] " + w.Name))
-
 	defaultPath := "./markov-chains/" + w.Name + "_body.json"
 	newPath := "./markov-chains/" + w.Name + "_body_new.json"
 
